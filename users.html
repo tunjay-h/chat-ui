@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- invisible section, metadata, title -->
+    <title>chat ui</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+    <h3>all users</h3>
+    <div id="divUsers">
+        <div class="flex items-center gap-3">
+            <span class="rounded-full border inline-block">
+                <img src="https://api.dicebear.com/7.x/adventurer/png?seed=test" />
+            </span>
+            username
+        </div>
+    </div>
+
+    <script>
+        function userComponent(username, profileUrl) {
+            return `<div class="flex items-center gap-3">
+                        <span class="rounded-full border inline-block">
+                            <img src="${profileUrl}" />
+                        </span>
+                        ${username}
+                    </div>`;
+        }
+
+        async function getAllUsers() {
+
+            let response = await fetch("http://localhost:8080/api/users/", { method: 'GET' });
+            console.log(response);
+
+            if (!response.ok) {
+                let err = await response.json();
+                alert(err.message);
+            } else {
+                // render all users
+                let allDivs = "";
+                let resp = await response.json();
+                resp.data.map((element, index) => {
+                    allDivs += userComponent(element.username);
+                });
+
+                document.getElementById("divUsers").innerHTML = allDivs;
+            }
+        }
+
+        // document on load
+        (() => {
+            getAllUsers();
+        })()
+
+    </script>
+</body>
+
+</html>

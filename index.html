@@ -22,15 +22,37 @@
             </div>
 
             <div>
-                <input  type="text" placeholder="username" />
+                <input id="inputUsername"  type="text" placeholder="username" />
             </div>
 
             <div>
-                <button class="bg-red-100 rounded-xl p-5">Join</button>
+                <button class="bg-red-100 rounded-xl p-5" onclick="createNewUser()">Join</button>
             </div>
 
         </div>
     </div>
+    
+    <script>
+         async function createNewUser() {
+            let username = document.getElementById("inputUsername").value;
+
+            if (username.trim()) {
+                let response = await fetch("http://localhost:8080/api/users/" + username, {method: 'POST'});
+                console.log(response);
+
+                if (!response.ok) {
+                    let err = await response.json();
+                    alert(err.message);
+                } else {
+                    window.location.assign("/users.html");
+                }
+
+            } else {
+                alert("username daxil edin")
+            }
+        }
+    </script>
+
 </body>
 
 </html>
