@@ -15,9 +15,9 @@
 
         <div id="container" class="gap-5"
             style="display: flex; height: 100vh; align-items: center; flex-direction: column; padding-top: 3rem;">
-            
+
             <img src="./assets/img/welcome.jpeg" style="width: 55%;" />
-            
+
             <div>
                 <input id="inputUsername" style="text-align: center;" type="text" placeholder="username" />
             </div>
@@ -33,15 +33,15 @@
 
         </div>
     </div>
-    
+
     <script>
         const apiUrl = "https://chat-api-sl4g.onrender.com";
 
-         async function createNewUser() {
+        async function createNewUser() {
             let username = document.getElementById("inputUsername").value;
 
             if (username.trim()) {
-                let response = await fetch(`${apiUrl}/api/users/${username}`, {method: 'POST'});
+                let response = await fetch(`${apiUrl}/api/users/${username}`, { method: 'POST' });
                 console.log(response);
 
                 if (!response.ok) {
@@ -69,7 +69,11 @@
         }
 
         function redirectPublicChat() {
-            window.location.assign("/chat/public.html");
+            // for live server extension
+            // window.location.assign("/chat/public.html");
+
+            // for real server
+            window.location.href = "chat/public.html";
         }
 
         function signout() {
