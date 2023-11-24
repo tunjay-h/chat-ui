@@ -6,6 +6,7 @@
     <title>chat ui</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.6/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -13,37 +14,48 @@
     <div id="main">
 
         <div id="container" class="gap-5"
-            style="display: flex; height: 100vh; justify-content: center; align-items: center; flex-direction: column;">
+            style="display: flex; height: 100vh; align-items: center; flex-direction: column; padding-top: 3rem;">
             
             <img src="./assets/img/welcome.jpeg" style="width: 55%;" />
             
-            <div id="header">
-                <h1 class="text-3xl font-bold underline">Welcome on board</h1>
+            <div>
+                <input id="inputUsername" style="text-align: center;" type="text" placeholder="username" />
             </div>
 
-            <div>
-                <input id="inputUsername"  type="text" placeholder="username" />
-            </div>
-
-            <div>
+            <div id="divNewUserButtons">
                 <button class="bg-red-100 rounded-xl p-5" onclick="createNewUser()">Join</button>
+            </div>
+
+            <div id="divExistingUserButtons">
+                <button class="bg-red-100 rounded-xl p-5" onclick="redirectPublicChat()">Public Chat</button>
+                <button class="bg-red-100 rounded-xl p-5" onclick="signout()">Sign out</button>
             </div>
 
         </div>
     </div>
     
     <script>
+        const apiUrl = "http://localhost:8080";
+
          async function createNewUser() {
             let username = document.getElementById("inputUsername").value;
 
             if (username.trim()) {
-                let response = await fetch("http://localhost:8080/api/users/" + username, {method: 'POST'});
+                let response = await fetch(`${apiUrl}/api/users/${username}`, {method: 'POST'});
                 console.log(response);
 
                 if (!response.ok) {
                     let err = await response.json();
                     alert(err.message);
                 } else {
+                    let userData = await response.json(); // {"id": 123, "username": "", profileUrl: "avatar"}
+
+                    // save user on browser localstorage, to get on any html page
+                    localStorage.setItem("user", JSON.stringify(userData));
+
+                    // get saved user data
+                    // let user = JSON.parse(localStorage.getItem("user"));
+
                     window.location.assign("/users.html");
                 }
 
@@ -51,6 +63,36 @@
                 alert("username daxil edin")
             }
         }
+
+        function redirectPublicChat() {
+            window.location.assign("/chat/public.html");
+        }
+
+        function signout() {
+            localStorage.removeItem("user");
+            location.reload();
+        }
+
+        // document on load
+        (() => {
+            let user = JSON.parse(localStorage.getItem("user"));
+
+            // if user exists, already joined
+            if (user) {
+                document.getElementById("inputUsername").value = user.username
+                document.getElementById("inputUsername").disabled = true;
+
+                document.getElementById("divNewUserButtons").style.display = 'none';
+                document.getElementById("divExistingUserButtons").style.display = '';
+            } else {
+                document.getElementById("inputUsername").value = '';
+                document.getElementById("inputUsername").disabled = false;
+
+                document.getElementById("divNewUserButtons").style.display = '';
+                document.getElementById("divExistingUserButtons").style.display = 'none';
+            }
+        })()
+
     </script>
 
 </body>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- invisible section, metadata, title -->
+    <title>chat ui</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.6/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+    <div id="container"
+        style="display: flex; height: 100vh; justify-content: center; align-items: center; flex-direction: column;">
+
+        <div>
+            <h3>public chat</h3>
+        </div>
+
+        <div id="divMessages" style="flex: 4; width: 100%; overflow-y: auto;">
+            <div class="chat chat-start">
+                <div class="chat-image avatar">
+                    <div class="w-10 rounded-full">
+                        <img alt="Tailwind CSS chat bubble component"
+                            src="https://api.dicebear.com/7.x/adventurer/png?seed=test" />
+                    </div>
+                </div>
+                <div class="chat-header">
+                    Obi-Wan Kenobi
+                    <time class="text-xs opacity-50">12:45</time>
+                </div>
+                <div class="chat-bubble">You were the Chosen One!</div>
+                <div class="chat-footer opacity-50">
+                    Delivered
+                </div>
+            </div>
+            <div class="chat chat-end">
+                <div class="chat-image avatar">
+                    <div class="w-10 rounded-full">
+                        <img alt="Tailwind CSS chat bubble component"
+                            src="https://api.dicebear.com/7.x/adventurer/png?seed=test" />
+                    </div>
+                </div>
+                <div class="chat-header">
+                    Anakin
+                    <time class="text-xs opacity-50">12:46</time>
+                </div>
+                <div class="chat-bubble">test test</div>
+                <div class="chat-footer opacity-50">
+                    Seen at 12:46
+                </div>
+            </div>
+        </div>
+
+        <div class="flex w-full">
+            <div style="width: 90%;">
+                <input id="inputMessage" type="text" placeholder="type your message..."
+                    class="input input-bordered w-full" />
+            </div>
+            <div style="width: 10%;">
+                <button type="button" class="btn" onclick="postNewMessage()">
+                    Send
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const POLL_INTERVAL = 1000; //5000ms - 5 seconds
+        const apiUrl = "http://localhost:8080";
+
+        function messsageComponent(username, avatarUrl, text, isLeft, date) {
+            let startEndClass = isLeft ? "chat-start" : "chat-end";
+
+            return `<div class="chat ${startEndClass}">
+                        <div class="chat-image avatar">
+                            <div class="w-10 rounded-full">
+                                <img src="${avatarUrl}" />
+                            </div>
+                        </div>
+                        <div class="chat-header">
+                            ${username}
+                        </div>
+                        <div class="chat-bubble">${text}</div>
+                        <div class="chat-footer opacity-50">
+                            ${date}
+                        </div>
+                    </div>`;
+        }
+
+        async function getAllMessages() {
+            let localUser = JSON.parse(localStorage.getItem("user"));
+
+            let response = await fetch(`${apiUrl}/api/messages`, { method: 'GET' });
+            console.log(response);
+
+            if (!response.ok) {
+                let err = await response.json();
+                alert(err.message);
+            } else {
+
+                // render all messages
+                let allDivs = "";
+                let msgList = await response.json();
+                // [ {"text": "salam", "createdAt": "2020-10-10", "user": {"id": 123, "username": "", "profileUrl": ""} } ]
+                msgList.map((element, index) => {
+                    let isLeft = localUser.id != element.user.id ? true : false;
+                    allDivs += messsageComponent(element.user.username, element.user.profileAvatarUrl, element.text, isLeft, element.createdAt);
+                });
+
+                document.getElementById("divMessages").innerHTML = allDivs;
+            }
+
+            setTimeout(getAllMessages, POLL_INTERVAL);
+        }
+
+        async function postNewMessage() {
+            let localUser = JSON.parse(localStorage.getItem("user"));
+
+            let msg = document.getElementById("inputMessage").value.trim();
+            let requestBody = { username: localUser.username, text: msg }
+
+            let response = await fetch(`${apiUrl}/api/messages`, {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(requestBody)
+            });
+            console.log(response);
+
+            if (!response.ok) {
+                let err = await response.json();
+                alert(err.message);
+            } else {
+
+                // render message
+                let msgData = await response.json();
+                // {"text": null, "createdAt": "2020-10-10", "user": null }
+
+                let divMsg = messsageComponent(localUser.username, localUser.profileAvatarUrl, msg, false, msgData.createdAt);
+
+                document.getElementById("divMessages").innerHTML += divMsg;
+
+                // scroll to bottom after inserting element
+                // ref: https://stackoverflow.com/questions/270612/scroll-to-bottom-of-div
+                document.getElementById("divMessages").scrollTop = document.getElementById("divMessages").scrollHeight;
+            }
+        }
+
+        // document on load
+        (() => {
+            
+            getAllMessages();
+
+            // document.getElementById("divMessages").innerHTML += messsageComponent("hasan", "https://api.dicebear.com/7.x/adventurer/png?seed=hasan", "salam necesen", true, "2022-10-12 12:12");
+            // document.getElementById("divMessages").innerHTML += messsageComponent("hasan", "https://api.dicebear.com/7.x/adventurer/png?seed=tbd", "salam necesen", false, "2022-10-12 12:12");
+        })()
+
+    </script>
+
+</body>
+
+</html>

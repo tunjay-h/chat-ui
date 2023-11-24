@@ -6,6 +6,7 @@
     <title>chat ui</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.6/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -21,9 +22,11 @@
     </div>
 
     <script>
+        const apiUrl = "http://localhost:8080";
+
         function userComponent(username, profileUrl) {
             return `<div class="flex items-center gap-3">
-                        <span class="rounded-full border inline-block">
+                        <span class="w-10 rounded-full border inline-block">
                             <img src="${profileUrl}" />
                         </span>
                         ${username}
@@ -31,8 +34,7 @@
         }
 
         async function getAllUsers() {
-
-            let response = await fetch("http://localhost:8080/api/users/", { method: 'GET' });
+            let response = await fetch(`${apiUrl}/api/users`, { method: 'GET' });
             console.log(response);
 
             if (!response.ok) {
@@ -41,9 +43,9 @@
             } else {
                 // render all users
                 let allDivs = "";
-                let resp = await response.json();
-                resp.data.map((element, index) => {
-                    allDivs += userComponent(element.username);
+                let usersList = await response.json();
+                usersList.map((element, index) => {
+                    allDivs += userComponent(element.username, element.profileAvatarUrl);
                 });
 
                 document.getElementById("divUsers").innerHTML = allDivs;
