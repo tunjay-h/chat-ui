@@ -59,7 +59,7 @@
                     class="input input-bordered w-full" />
             </div>
             <div style="width: 10%;">
-                <button type="button" class="btn" >
+                <button type="submit" class="btn">
                     Send
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
@@ -69,6 +69,9 @@
                 </button>
             </div>
         </form>
+
+        <button onclick="scrollDown()" type="button" class="btn"
+            style="position: fixed; bottom: 20%; right: 5px; z-index: 99;">down</button>
 
     </div>
 
@@ -95,6 +98,12 @@
                     </div>`;
         }
 
+        function scrollDown() {
+            // scroll to bottom
+            // ref: https://stackoverflow.com/questions/270612/scroll-to-bottom-of-div
+            document.getElementById("divMessages").scrollTop = document.getElementById("divMessages").scrollHeight;
+        }
+
         async function getAllMessages() {
             let localUser = JSON.parse(localStorage.getItem("user"));
 
@@ -116,10 +125,6 @@
                 });
 
                 document.getElementById("divMessages").innerHTML = allDivs;
-
-                // scroll to bottom
-                // ref: https://stackoverflow.com/questions/270612/scroll-to-bottom-of-div
-                document.getElementById("divMessages").scrollTop = document.getElementById("divMessages").scrollHeight;
             }
 
             setTimeout(getAllMessages, POLL_INTERVAL);
@@ -130,6 +135,8 @@
             let localUser = JSON.parse(localStorage.getItem("user"));
 
             let msg = document.getElementById("inputMessage").value.trim();
+            if (!msg) return; // dont send empty message
+
             let requestBody = { username: localUser.username, text: msg }
 
             let response = await fetch(`${apiUrl}/api/messages`, {
@@ -163,7 +170,7 @@
 
         // document on load
         (() => {
-            
+
             getAllMessages();
 
             // document.getElementById("divMessages").innerHTML += messsageComponent("hasan", "https://api.dicebear.com/7.x/adventurer/png?seed=hasan", "salam necesen", true, "2022-10-12 12:12");
